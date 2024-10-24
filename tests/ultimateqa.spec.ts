@@ -1,23 +1,22 @@
 ﻿import test, {expect} from "@playwright/test";
-import NavigationSection from "../pages/ultimateqa/navigationSection";
-import Form from "../pages/ultimateqa/form";
+import NavigationSectionsPage from "../pages/ultimateqa/navigationSectionsPage";
+import FormsPage from "../pages/ultimateqa/formsPage";
+import ButtonsPage from "../pages/ultimateqa/buttonsPage";
 
 const appUrl = 'https://ultimateqa.com/complicated-page';
 
 test('Hiding/showing navigation sections works correctly', async ({page}) => {
     await page.goto(appUrl);
+    const navigationSectionsPage = new NavigationSectionsPage(page);
 
-    const navigationSections = await page.locator('//div[@class="lwptoc_i"]').all();
+    const navigationSectionsCount = await navigationSectionsPage.navigationSections.count();
 
-    for (const navigationSection of navigationSections) {
-        const section = new NavigationSection(page, navigationSection)
-        const navigationItems = navigationSection.locator(section.navigationItems);
+    for (let navigationSectionIndex = 0; navigationSectionIndex < navigationSectionsCount; navigationSectionIndex++) {
+        await navigationSectionsPage.hide(navigationSectionIndex);
+        await expect(await navigationSectionsPage.getNavigationItems(navigationSectionIndex)).toBeHidden();
 
-        await section.hide();
-        await expect(navigationItems).toBeHidden();
-
-        await section.show();
-        await expect(navigationItems).toBeVisible();
+        await navigationSectionsPage.show(navigationSectionIndex);
+        await expect(await navigationSectionsPage.getNavigationItems(navigationSectionIndex)).toBeVisible();
     }
 });
 
@@ -28,23 +27,18 @@ test.describe('Parameterized form tests', () => {
         {name: 'John', email: 'john@gmail.com', message: 'I am John'},
     ];
 
-    testCases.forEach(({name, email, message}) => {
-        test(`Data name: "${name}", email: "${email}", message: "${message}" successfully submits in forms`,
-            async ({page}) => {
-                await page.goto(appUrl);
-                const formContainers =
-                    await page.locator('//div[contains(@id, \'et_pb_contact_form_\')]').all();
+    test('Successfully submits all forms', async ({page}) => {
+        await page.goto(appUrl);
+        const formsPage = new FormsPage(page);
 
-                for (const formContainer of formContainers) {
-                    const form = new Form(page, formContainer);
+        for (let i = 0; i < testCases.length; i++) {
+            const {name, email, message} = testCases[i];
 
-                    await form.fill(name, email, message);
-                    await form.submit();
-                    const successMessage = formContainer.locator(form.successMessage);
-                    await successMessage.waitFor({state: 'visible'});
-                    expect(await successMessage.innerText()).toBe('Thanks for contacting us');
-                }
-            });
+            await formsPage.fillAndSubmitForm(i, name, email, message);
+            const successMessage = await formsPage.getSuccessMessage(i);
+            await expect(successMessage).toBeVisible();
+            await expect(successMessage).toHaveText('Thanks for contacting us');
+        }
     });
 });
 
@@ -74,13 +68,14 @@ test.skip('Social media buttons are visible and have correct URLs', async ({page
 });
 
 test('All buttons in section refresh page when clicked', async ({page}) => {
-    await page.goto(appUrl)
+    await page.goto(appUrl);
+    const buttonsPage = new ButtonsPage(page);
 
-    const buttons = await page.locator('//a[contains(@class, "et_pb_button_")]').all();
+    const buttonsCount = await buttonsPage.buttons.count();
+    const initialUrl = page.url();
 
-    for (const button of buttons) {
-        const initialUrl = page.url();
-        await button.click();
+    for (let buttonIndex = 0; buttonIndex < buttonsCount; buttonIndex++) {
+        await buttonsPage.clickButton(buttonIndex);
         await page.waitForURL(appUrl);
         const newUrl = page.url();
         expect(newUrl).toBe(initialUrl);

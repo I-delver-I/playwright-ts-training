@@ -1,19 +1,25 @@
-﻿import {Page} from "@playwright/test";
+﻿import {Locator, Page} from "@playwright/test";
 
 export default class ProductsFilterPage {
     page: Page;
-    filterMinimalPrice = '//*[@name="minPrice"]';
-    filterMaximalPrice = '//*[@name="maxPrice"]';
-    applyButton = '//*[contains(@class, "price--ok--")]';
-    errorInput = '//*[contains(@class, "price--errorInput--")]';
+    filterMinimalPrice: Locator;
+    filterMaximalPrice: Locator;
+    applyButton: Locator;
+    errorInput: Locator;
+    filterContainer: Locator;
 
     constructor (page: Page) {
         this.page = page;
+        this.filterContainer = page.locator('//div[@class=\'refine2023--refine--3SE-006\']');
+        this.filterMinimalPrice = this.filterContainer.locator('//*[@name="minPrice"]')
+        this.filterMaximalPrice = this.filterContainer.locator('//*[@name="maxPrice"]')
+        this.applyButton = this.filterContainer.locator('//*[contains(@class, "price--ok--")]');
+        this.errorInput = this.filterContainer.locator('//*[contains(@class, "price--errorInput--")]');
     }
 
-    async getErrorInput(): Promise<string> {
+    async getErrorText(): Promise<string> {
         try {
-            return await this.page.locator(this.errorInput).innerText();
+            return await this.errorInput.innerText();
         } catch (error) {
             console.error(`Failed to get error input:`, error);
             return '';
@@ -22,7 +28,7 @@ export default class ProductsFilterPage {
 
     async getMinimalPrice(): Promise<number> {
         try {
-            return Number(await this.page.locator(this.filterMinimalPrice).inputValue());
+            return Number(await this.filterMinimalPrice.inputValue());
         } catch (error) {
             console.error(`Failed to get minimal price:`, error);
             return 0;
@@ -31,7 +37,7 @@ export default class ProductsFilterPage {
 
     async getMaximalPrice(): Promise<number> {
         try {
-            return Number(await this.page.locator(this.filterMaximalPrice).inputValue());
+            return Number(await this.filterMaximalPrice.inputValue());
         } catch (error) {
             console.error(`Failed to get maximal price:`, error);
             return 0;
@@ -40,7 +46,7 @@ export default class ProductsFilterPage {
 
     async applyFilter() {
         try {
-            await this.page.locator(this.applyButton).click();
+            await this.applyButton.click();
         } catch (error) {
             console.error(`Failed to apply filter:`, error);
         }
@@ -48,7 +54,7 @@ export default class ProductsFilterPage {
 
     async setMinimalPrice(price: number) {
         try {
-            await this.page.locator(this.filterMinimalPrice).fill(String(price));
+            await this.filterMinimalPrice.fill(String(price));
         } catch (error) {
             console.error(`Failed to set minimal price "${price}":`, error);
         }
@@ -56,9 +62,18 @@ export default class ProductsFilterPage {
 
     async setMaximalPrice(price: number) {
         try {
-            await this.page.locator(this.filterMaximalPrice).fill(String(price));
+            await this.filterMaximalPrice.fill(String(price));
         } catch (error) {
             console.error(`Failed to set maximal price "${price}":`, error);
+        }
+    }
+
+    async fillPriceRange(minPrice: number, maxPrice: number) {
+        try {
+            await this.setMinimalPrice(minPrice);
+            await this.setMaximalPrice(maxPrice);
+        } catch (error) {
+            console.error(`Failed to fill price range:`, error);
         }
     }
 }

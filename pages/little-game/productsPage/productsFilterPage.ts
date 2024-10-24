@@ -1,6 +1,6 @@
 ﻿import {Page} from "@playwright/test";
 
-export default class ProductsFilter {
+export default class ProductsFilterPage {
     page: Page;
 
     constructor(page: Page) {

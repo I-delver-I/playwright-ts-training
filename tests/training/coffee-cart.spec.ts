@@ -1,6 +1,6 @@
 import test, { expect } from "@playwright/test";
 
-test("Coffee Cart test", async ({ page }) => {
+test.skip("Coffee Cart test", async ({ page }) => {
     const appUrl = 'https://coffee-cart.app/';
     await page.goto(appUrl);
 

@@ -1,22 +1,27 @@
-﻿import {Page} from "@playwright/test";
+﻿import {Locator, Page} from "@playwright/test";
 import {sanitizeProductPrice} from "../../../utils/productUtils";
 
 export default class ProductItemsPage {
     page: Page;
-    products = '.search-card-item';
-    productsPrices = '//*[contains(@class, "multi--price-sale--")]';
-    productsTitle = '//*[contains(@class, "multi--titleText--")]';
+    productsList: Locator;
+    productCards: Locator;
+    productsPrice: Locator;
+    productsTitle: Locator;
 
     allProductsLoaded = false;
 
-    constructor (page: Page) {
+    constructor(page: Page) {
         this.page = page;
+        this.productsList = page.locator('//div[@id = \'card-list\']');
+        this.productCards = this.productsList.locator('//a[contains(@class, \'search-card-item\')]');
+        this.productsTitle = this.productCards.locator('//h4');
+        this.productsPrice = this.productCards.locator('//div[contains(@class, \'multi--price-sale--\')]');
     }
 
     async getProductsPrices(): Promise<number[]> {
         try {
             await this.loadAllProducts();
-            const prices = await this.page.locator(this.productsPrices).allInnerTexts();
+            const prices = await this.productsPrice.allInnerTexts();
             return prices.map(price => sanitizeProductPrice(price));
         } catch (error) {
             console.error(`Failed to get product prices:`, error);
@@ -27,7 +32,7 @@ export default class ProductItemsPage {
     async getProductTitles(): Promise<string[]> {
         try {
             await this.loadAllProducts();
-            return await this.page.locator(this.productsTitle).allInnerTexts();
+            return await this.productsTitle.allInnerTexts();
         } catch (error) {
             console.error(`Failed to get product titles:`, error);
             return [];
@@ -36,8 +41,7 @@ export default class ProductItemsPage {
 
     async getProductsCount(): Promise<number> {
         try {
-            await this.loadAllProducts();
-            return this.page.locator(this.products).count();
+            return this.productCards.count();
         } catch (error) {
             console.error(`Failed to get products:`, error);
             return 0;
@@ -50,7 +54,7 @@ export default class ProductItemsPage {
         }
 
         let previousCount = 0;
-        let currentCount = await this.page.locator(this.productsPrices).count();
+        let currentCount = await this.getProductsCount();
 
         while (currentCount > previousCount) {
             previousCount = currentCount;
@@ -58,8 +62,8 @@ export default class ProductItemsPage {
             await this.page.evaluate(async () => {
                 const distance = 100;
 
-                while (document.documentElement.scrollTop + window.innerHeight
-                < document.documentElement.scrollHeight) {
+                while (document.documentElement.scrollTop
+                + window.innerHeight < document.documentElement.scrollHeight) {
                     window.scrollBy(0, distance);
                     await new Promise(resolve => {
                         const scrollDelay = 100;
@@ -68,7 +72,7 @@ export default class ProductItemsPage {
                 }
             });
 
-            currentCount = await this.page.locator(this.productsPrices).count();
+            currentCount = await this.getProductsCount();
 
             if (currentCount === previousCount) {
                 break;

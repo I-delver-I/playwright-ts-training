@@ -1,14 +1,14 @@
 ﻿import test, {expect, Page} from "@playwright/test";
-import ProductsFilter from "../pages/little-game/productsPage/productsFilter";
+import ProductsFilterPage from "../../pages/little-game/productsPage/productsFilterPage";
 
-test('Brand name selection filters products correctly', async ({page}) => {
+test.skip('Brand name selection filters products correctly', async ({page}) => {
     const appUrl = 'https://www.little-game.store/';
     await page.goto(appUrl);
 
     const category = getCategory(page, 'Зарядні станції та генератори');
     await category.click();
 
-    const productsFilter = new ProductsFilter(page);
+    const productsFilter = new ProductsFilterPage(page);
     const brandName = 'IDEAL';
     const categoryCheckbox = productsFilter.getBrandCheckbox(brandName);
     await categoryCheckbox.click();

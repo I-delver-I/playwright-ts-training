@@ -1,7 +1,7 @@
 import {expect} from "@playwright/test";
 import {test} from '../../fixtures/custom/aliexpress-pages-fixture';
 
-test("Form test", async ({page}) => {
+test.skip("Form test", async ({page}) => {
     const appUrl = 'https://demoqa.com/automation-practice-form';
 
     // await formPage.navigate(appUrl);

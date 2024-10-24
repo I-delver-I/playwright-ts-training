@@ -2,26 +2,19 @@ import {expect} from "@playwright/test";
 import {test} from '../fixtures/custom/aliexpress-pages-fixture';
 import SignInModalPage from "../pages/aliexpress/common/signInModalPage";
 import * as fs from "node:fs";
+import CategoriesDropdownPage from "../pages/aliexpress/categoriesDropdownPage";
 
 const appUrl = 'https://www.aliexpress.com/';
 
-test('Search by category works correctly', async ({page, searchBar}) => {
+test('Search by category works correctly', async ({page, searchBarPage}) => {
     await page.goto(appUrl);
-
-    await page.waitForSelector('//*[@class="_24EHh"]');
-    const closeButton = page.locator('//*[@class="_24EHh"]');
-    await closeButton.click();
-
-    const categoriesDropdown = page.locator('//*[contains(@class, "Categoey--categoryLeft--")]');
-    await categoriesDropdown.hover();
-    const subcategoryDropdown = page.locator('//*[contains(@data, "home_appliances")]');
-    await subcategoryDropdown.hover();
+    const categoriesDropdownPage = new CategoriesDropdownPage(page);
+    await categoriesDropdownPage.closePushNotificationWindow();
 
     const categoryName = 'Induction Cookers';
-    const category = categoriesDropdown.getByRole('link', {name: categoryName});
-    await category.click();
+    await categoriesDropdownPage.clickCategory(categoryName);
 
-    const searchValue = await searchBar.getInputQuery();
+    const searchValue = await searchBarPage.getInputQuery();
     expect(searchValue).toBe(categoryName);
 });
 
@@ -45,64 +38,51 @@ test.skip('Sign in works correctly', async ({page}) => {
     await passwordInput.fill('password');
 });
 
-test('Price filter displays error when passed negative values',
-    async ({page, searchBar, productsFilter}) => {
-        await page.goto(appUrl);
+test('Price filter displays error text when passed negative value', async ({page, searchBarPage, productsFilterPage}) => {
+    await page.goto(appUrl);
 
-        const searchValue = 'pants';
-        await searchBar.enterQuery(searchValue);
-        await searchBar.clickSearchButton();
+    const searchValue = 'pants';
+    await searchBarPage.fillInput(searchValue);
+    await searchBarPage.clickSearchButton();
 
-        const minimalPrice = -1;
-        const maximalPrice = 777;
+    await productsFilterPage.filterContainer.waitFor({state: 'visible'});
+    const minPrice = -1;
+    const maxPrice = 777;
+    await productsFilterPage.fillPriceRange(minPrice, maxPrice);
 
-        await page.waitForTimeout(2000);
-        await productsFilter.setMinimalPrice(minimalPrice);
-        await productsFilter.setMaximalPrice(maximalPrice);
-
-        const errorText = await productsFilter.getErrorInput();
-        expect(errorText).toBe('Please enter valid numbers into the price range');
-    });
+    const errorText = await productsFilterPage.getErrorText();
+    const expectedErrorText = 'Please enter valid numbers into the price range';
+    expect(errorText).toBe(expectedErrorText);
+});
 
 test('Price filter applies correctly when passed correct values',
-    async ({page, productItems, productsFilter, searchBar}) => {
+    async ({page, productItemsPage, productsFilterPage, searchBarPage}) => {
         await page.goto(appUrl);
 
         const searchValue = 'pants';
-        await searchBar.enterQuery(searchValue);
-        await searchBar.clickSearchButton();
+        await searchBarPage.fillInput(searchValue);
+        await searchBarPage.clickSearchButton();
 
-        // Working but complex scroll displaying all 60 items
-        // await loadAllProducts(page);
+        await productsFilterPage.filterContainer.waitFor({state: 'visible'});
+        const minPrice = 0;
+        const maxPrice = 333;
+        await productsFilterPage.fillPriceRange(minPrice, maxPrice);
+        await productsFilterPage.applyFilter();
 
-        // Simple but non-properly working scroll displaying 22 items
-        // let paginator = page.locator('//ul[contains(@class, "comet-pagination")]');
-        // await paginator.scrollIntoViewIfNeeded();
-        //
-        // await page.waitForTimeout(2000);
-
-        const minimalPrice = 0;
-        const maximalPrice = 333;
-
-        await page.waitForSelector(productsFilter.filterMinimalPrice);
-        await productsFilter.setMinimalPrice(minimalPrice);
-        await productsFilter.setMaximalPrice(maximalPrice);
-        await productsFilter.applyFilter();
-
-        const productsPrices = await productItems.getProductsPrices();
+        const productsPrices = await productItemsPage.getProductsPrices();
         expect(productsPrices.every(price =>
-            price >= minimalPrice && price <= maximalPrice)).toBeTruthy();
-    });
+            price >= minPrice && price <= maxPrice)).toBeTruthy();
+});
 
-test('Products have correct titles', async ({page, productItems, searchBar}) => {
+test('Products have correct titles', async ({page, productItemsPage, searchBarPage}) => {
     await page.goto(appUrl);
 
     const searchQuery = 'pants';
-    await searchBar.enterQuery(searchQuery);
-    await searchBar.clickSearchButton();
+    await searchBarPage.fillInput(searchQuery);
+    await searchBarPage.clickSearchButton();
 
-    const productTitles = await productItems.getProductTitles();
-
-    expect(productTitles.every(title => title.toLowerCase().match(/pants?/)))
-        .toBeTruthy();
+    await productItemsPage.productsList.waitFor({state: 'visible'});
+    const productTitles = await productItemsPage.getProductTitles();
+    expect(productTitles.every(title =>
+        title.match(/pants?/i))).toBeTruthy();
 });

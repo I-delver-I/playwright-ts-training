@@ -1,26 +1,29 @@
-﻿import { Page } from "@playwright/test";
+﻿import {Locator, Page} from "@playwright/test";
 
 export default class SearchBarPage {
     page: Page;
-    searchInput = '#search-words';
-    searchButton = '//*[contains(@class, "search--submit--")]';
+    searchInput: Locator;
+    searchButton: Locator;
 
-    constructor (page: Page) {
+    constructor(page: Page) {
         this.page = page;
+        const searchContainer = this.page.locator('//div[contains(@class,\'search--search--\')]');
+        this.searchInput = searchContainer.locator('//input').first();
+        this.searchButton = searchContainer.locator('//input').last();
     }
 
     async getInputQuery(): Promise<string> {
         try {
-            return await this.page.locator(this.searchInput).inputValue();
+            return await this.searchInput.inputValue();
         } catch (error) {
             console.error(`Failed to get search input value:`, error);
             return '';
         }
     }
 
-    async enterQuery(q: string) {
+    async fillInput(q: string) {
         try {
-            await this.page.locator(this.searchInput).fill(q);
+            await this.searchInput.fill(q);
         } catch (error) {
             console.error(`Failed to enter search query "${q}":`, error);
         }
@@ -28,7 +31,7 @@ export default class SearchBarPage {
 
     async clickSearchButton() {
         try {
-            await this.page.locator(this.searchButton).click();
+            await this.searchButton.click();
         } catch (error) {
             console.error(`Failed to click search button:`, error);
         }

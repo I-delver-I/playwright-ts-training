@@ -1,25 +1,46 @@
-﻿import test, {expect} from "@playwright/test";
-import LoginForm from "../pages/saucedemo/loginForm";
+﻿import {expect, Page} from "@playwright/test";
+import {test} from "../fixtures/custom/saucedemo-pages-fixture";
+import SaucedemoBase from "../pages/saucedemo/saucedemoBase";
+import '../setupEnv';
+import InventoryPage from "../pages/saucedemo/inventoryPage";
+import CartPage from "../pages/saucedemo/cartPage";
 
-test('Login occurs successfully', async ({page}) => {
-    const appUrl = 'https://www.saucedemo.com/';
+const appUrl = 'https://www.saucedemo.com/';
 
+test('Items add to cart successfully', async ({page, basePage}) => {
     await page.goto(appUrl);
 
-    const loginForm = new LoginForm(page);
-    await loginForm.setUserName('standard_user');
-    await loginForm.setPassword('secret_sauce');
-    await loginForm.login();
+    await basePage.login();
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.addFirstThreeItemsToCart();
+    const firstThreeItemNames = await inventoryPage.getFirstThreeItemNames();
 
-    await page.waitForSelector('//a[@class="shopping_cart_link"]');
-    expect(page.url()).toMatch(/inventory/);
-    expect(await page.locator('//div[@class="inventory_list"]').isVisible()).toBe(true);
+    const cartPage = new CartPage(page);
+    await basePage.authUserHeaderPage.clickShoppingCart();
+    const cartItemNames = await cartPage.getCartItemNames();
 
-    const buttonReactBurgerMenu = page.locator("//*[@id='react-burger-menu-btn']")
-    await buttonReactBurgerMenu.click();
-
-    const linkLogoutSidebar = page.locator("xpath=//*[@id='logout_sidebar_link']")
-    await linkLogoutSidebar.click();
-    expect(page.url()).not.toMatch(/inventory/);
-    expect(await page.locator('#login-button').isVisible()).toBe(true);
+    for (let i = 0; i < firstThreeItemNames.length; i++) {
+        expect(await cartItemNames[i].innerText()).toContain(await firstThreeItemNames[i].innerText());
+    }
 });
+
+test('Login occurs successfully', async ({page, basePage}) => {
+    await page.goto(appUrl);
+
+    await basePage.login();
+    await verifyLoginSuccess(page, basePage);
+
+    await basePage.logout();
+    await verifyLogoutSuccess(page, basePage);
+});
+
+async function verifyLogoutSuccess(page: Page, basePage: SaucedemoBase) {
+    expect(page.url()).not.toMatch(/inventory/);
+    expect(await basePage.loginPage.loginButton.isVisible()).toBe(true);
+}
+
+async function verifyLoginSuccess(page: Page, basePage: SaucedemoBase) {
+    await basePage.authUserHeaderPage.shoppingCartButton.waitFor({ state: 'visible' });
+    expect(page.url()).toMatch(/inventory/);
+    expect(await basePage.authUserHeaderPage.shoppingCartButton.isVisible()).toBe(true);
+}

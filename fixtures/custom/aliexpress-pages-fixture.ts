@@ -9,21 +9,21 @@ import ProductsFilterPage from "../../pages/aliexpress/productsPage/productsFilt
 import SearchBarPage from "../../pages/aliexpress/common/searchBarPage";
 
 type UIPages = {
-    productItems: ProductItemsPage;
-    productsFilter: ProductsFilterPage;
-    searchBar: SearchBarPage;
+    productItemsPage: ProductItemsPage;
+    productsFilterPage: ProductsFilterPage;
+    searchBarPage: SearchBarPage;
 }
 
 export const test = base.extend<UIPages>({
-    productItems: async ({ page }, use) => {
+    productItemsPage: async ({ page }, use) => {
         const product = new ProductItemsPage(page);
         await use(product);
     },
-    productsFilter: async ({ page }, use) => {
+    productsFilterPage: async ({ page }, use) => {
         const filter = new ProductsFilterPage(page);
         await use(filter);
     },
-    searchBar: async ({ page }, use) => {
+    searchBarPage: async ({ page }, use) => {
         const search = new SearchBarPage(page);
         await use(search);
     },
