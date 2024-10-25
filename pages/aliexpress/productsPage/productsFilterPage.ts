@@ -54,7 +54,7 @@ export default class ProductsFilterPage {
 
     async setMinimalPrice(price: number) {
         try {
-            await this.filterMinimalPrice.fill(String(price));
+            await this.filterMinimalPrice.fill(String(price), { force: true });
         } catch (error) {
             console.error(`Failed to set minimal price "${price}":`, error);
         }
@@ -62,7 +62,7 @@ export default class ProductsFilterPage {
 
     async setMaximalPrice(price: number) {
         try {
-            await this.filterMaximalPrice.fill(String(price));
+            await this.filterMaximalPrice.fill(String(price), { force: true });
         } catch (error) {
             console.error(`Failed to set maximal price "${price}":`, error);
         }

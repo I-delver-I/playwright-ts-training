@@ -6,8 +6,11 @@ import CategoriesDropdownPage from "../pages/aliexpress/categoriesDropdownPage";
 
 const appUrl = 'https://www.aliexpress.com/';
 
-test('Search by category works correctly', async ({page, searchBarPage}) => {
+test.beforeEach(async ({page}) => {
     await page.goto(appUrl);
+});
+
+test('Search by category works correctly', async ({page, searchBarPage}) => {
     const categoriesDropdownPage = new CategoriesDropdownPage(page);
     await categoriesDropdownPage.closePushNotificationWindow();
 
@@ -38,14 +41,11 @@ test.skip('Sign in works correctly', async ({page}) => {
     await passwordInput.fill('password');
 });
 
-test('Price filter displays error text when passed negative value', async ({page, searchBarPage, productsFilterPage}) => {
-    await page.goto(appUrl);
-
+test('Price filter displays error text when passed negative value', async ({searchBarPage, productsFilterPage}) => {
     const searchValue = 'pants';
     await searchBarPage.fillInput(searchValue);
     await searchBarPage.clickSearchButton();
 
-    await productsFilterPage.filterContainer.waitFor({state: 'visible'});
     const minPrice = -1;
     const maxPrice = 777;
     await productsFilterPage.fillPriceRange(minPrice, maxPrice);
@@ -56,27 +56,23 @@ test('Price filter displays error text when passed negative value', async ({page
 });
 
 test('Price filter applies correctly when passed correct values',
-    async ({page, productItemsPage, productsFilterPage, searchBarPage}) => {
-        await page.goto(appUrl);
-
+    async ({productItemsPage, productsFilterPage, searchBarPage}) => {
         const searchValue = 'pants';
         await searchBarPage.fillInput(searchValue);
         await searchBarPage.clickSearchButton();
 
-        await productsFilterPage.filterContainer.waitFor({state: 'visible'});
-        const minPrice = 0;
+        const minPrice = 50;
         const maxPrice = 333;
         await productsFilterPage.fillPriceRange(minPrice, maxPrice);
         await productsFilterPage.applyFilter();
 
+        await productItemsPage.productsList.waitFor({state: 'visible'});
         const productsPrices = await productItemsPage.getProductsPrices();
         expect(productsPrices.every(price =>
             price >= minPrice && price <= maxPrice)).toBeTruthy();
 });
 
-test('Products have correct titles', async ({page, productItemsPage, searchBarPage}) => {
-    await page.goto(appUrl);
-
+test('Products have correct titles', async ({productItemsPage, searchBarPage}) => {
     const searchQuery = 'pants';
     await searchBarPage.fillInput(searchQuery);
     await searchBarPage.clickSearchButton();
