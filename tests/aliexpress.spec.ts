@@ -3,16 +3,19 @@ import {test} from '../fixtures/custom/aliexpress-pages-fixture';
 import SignInModalPage from "../pages/aliexpress/common/signInModalPage";
 import * as fs from "node:fs";
 import CategoriesDropdownPage from "../pages/aliexpress/categoriesDropdownPage";
+import PushNotificationComponent from "../page-components/pushNotificationComponent";
 
 const appUrl = 'https://www.aliexpress.com/';
+let pushNotificationPage: PushNotificationComponent;
 
 test.beforeEach(async ({page}) => {
     await page.goto(appUrl);
+    pushNotificationPage = new PushNotificationComponent(page);
+    await pushNotificationPage.closePushNotificationWindow();
 });
 
 test('Search by category works correctly', async ({page, searchBarPage}) => {
     const categoriesDropdownPage = new CategoriesDropdownPage(page);
-    await categoriesDropdownPage.closePushNotificationWindow();
 
     const categoryName = 'Induction Cookers';
     await categoriesDropdownPage.clickCategory(categoryName);
