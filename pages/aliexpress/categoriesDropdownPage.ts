@@ -1,21 +1,21 @@
-﻿import {Page} from "@playwright/test";
+﻿import {Locator, Page} from "@playwright/test";
 
 export default class CategoriesDropdownPage {
     page: Page;
-    categoriesDropdown = '//*[contains(@class, "Categoey--categoryLeft--")]';
-    subcategoryDropdown = '//*[contains(@data, "home_appliances")]';
+    categoriesDropdown: Locator;
+    homeAppliancesDropdown: Locator;
 
     constructor (page: Page) {
         this.page = page;
+        this.categoriesDropdown = page.locator('//*[contains(@class, "Categoey--categoryLeft--")]');
+        this.homeAppliancesDropdown = page.locator('//*[contains(@data, "home_appliances")]');
     }
 
     async clickCategory(categoryName: string) {
-        const categoriesDropdown = this.page.locator(this.categoriesDropdown);
-        await categoriesDropdown.hover();
-        const subcategoryDropdown = this.page.locator(this.subcategoryDropdown);
-        await subcategoryDropdown.hover();
+        await this.categoriesDropdown.hover();
+        await this.homeAppliancesDropdown.hover();
 
-        const category = categoriesDropdown.getByRole('link', {name: categoryName});
+        const category = this.categoriesDropdown.getByRole('link', {name: categoryName});
         await category.click();
     }
 }

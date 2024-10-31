@@ -10,11 +10,11 @@ let pushNotificationPage: PushNotificationComponent;
 
 test.beforeEach(async ({page}) => {
     await page.goto(appUrl);
-    pushNotificationPage = new PushNotificationComponent(page);
-    await pushNotificationPage.closePushNotificationWindow();
 });
 
 test('Search by category works correctly', async ({page, searchBarPage}) => {
+    pushNotificationPage = new PushNotificationComponent(page);
+    await pushNotificationPage.closePushNotificationWindow();
     const categoriesDropdownPage = new CategoriesDropdownPage(page);
 
     const categoryName = 'Induction Cookers';
@@ -44,11 +44,12 @@ test.skip('Sign in works correctly', async ({page}) => {
     await passwordInput.fill('password');
 });
 
-test('Price filter displays error text when passed negative value', async ({searchBarPage, productsFilterPage}) => {
+test('Price filter displays error text when passed negative value', async ({page, searchBarPage, productsFilterPage}) => {
     const searchValue = 'pants';
     await searchBarPage.fillInput(searchValue);
     await searchBarPage.clickSearchButton();
 
+    await page.waitForTimeout(1000);
     const minPrice = -1;
     const maxPrice = 777;
     await productsFilterPage.fillPriceRange(minPrice, maxPrice);
@@ -59,11 +60,12 @@ test('Price filter displays error text when passed negative value', async ({sear
 });
 
 test('Price filter applies correctly when passed correct values',
-    async ({productItemsPage, productsFilterPage, searchBarPage}) => {
+    async ({page, productItemsPage, productsFilterPage, searchBarPage}) => {
         const searchValue = 'pants';
         await searchBarPage.fillInput(searchValue);
         await searchBarPage.clickSearchButton();
 
+        await page.waitForTimeout(1000);
         const minPrice = 50;
         const maxPrice = 333;
         await productsFilterPage.fillPriceRange(minPrice, maxPrice);

@@ -20,12 +20,11 @@ test.skip('Brand name selection filters products correctly', async ({page}) => {
         expect(title).toMatch(new RegExp(brandName, 'i'));
     });
 
-    const appliedFilter = getAppliedBrandFilter(brandName);
+    getAppliedBrandFilter(page, brandName);
 });
 
-function getAppliedBrandFilter(brandName: string): boolean {
-    return this.page.locator
-    (`//*[contains(@class, "ut2-selected-product-filters")]//span[text()="${brandName}"]`);
+function getAppliedBrandFilter(page: Page, brandName: string) {
+    return page.locator(`//*[contains(@class, "ut2-selected-product-filters")]//span[text()="${brandName}"]`);
 }
 
 function getCategory(page: Page, categoryName: string) {

@@ -1,22 +1,25 @@
 ﻿import test, {expect} from "@playwright/test";
-import NavigationSectionsPage from "../pages/ultimateqa/navigationSectionsPage";
-import FormsPage from "../pages/ultimateqa/formsPage";
+import NavSectionsPage from "../pages/ultimateqa/navSectionsPage";
+import FormPage from "../pages/ultimateqa/formPage";
 import ButtonsPage from "../pages/ultimateqa/buttonsPage";
 
 const appUrl = 'https://ultimateqa.com/complicated-page';
 
-test('Hiding/showing navigation sections works correctly', async ({page}) => {
+test.beforeEach(async ({page}) => {
     await page.goto(appUrl);
-    const navigationSectionsPage = new NavigationSectionsPage(page);
+});
 
-    const navigationSectionsCount = await navigationSectionsPage.navigationSections.count();
+test('Hiding/showing navigation sections works correctly', async ({page}) => {
+    const navSectionsPage = new NavSectionsPage(page);
 
-    for (let navigationSectionIndex = 0; navigationSectionIndex < navigationSectionsCount; navigationSectionIndex++) {
-        await navigationSectionsPage.hide(navigationSectionIndex);
-        await expect(await navigationSectionsPage.getNavigationItems(navigationSectionIndex)).toBeHidden();
+    const navSectionsCount = await navSectionsPage.navSections.count();
 
-        await navigationSectionsPage.show(navigationSectionIndex);
-        await expect(await navigationSectionsPage.getNavigationItems(navigationSectionIndex)).toBeVisible();
+    for (let navSectionIndex = 0; navSectionIndex < navSectionsCount; navSectionIndex++) {
+        await navSectionsPage.hide(navSectionIndex);
+        await expect(await navSectionsPage.getNavItemsWrap(navSectionIndex)).toBeHidden();
+
+        await navSectionsPage.show(navSectionIndex);
+        await expect(await navSectionsPage.getNavItemsWrap(navSectionIndex)).toBeVisible();
     }
 });
 
@@ -28,8 +31,7 @@ test.describe('Parameterized form tests', () => {
     ];
 
     test('Successfully submits all forms', async ({page}) => {
-        await page.goto(appUrl);
-        const formsPage = new FormsPage(page);
+        const formsPage = new FormPage(page);
 
         for (let i = 0; i < testCases.length; i++) {
             const {name, email, message} = testCases[i];
@@ -43,13 +45,6 @@ test.describe('Parameterized form tests', () => {
 });
 
 test.skip('Social media buttons are visible and have correct URLs', async ({page}) => {
-    await page.goto(appUrl);
-
-    const socialMediaButtons = [
-        {selector: 'a#facebook-follow', expectedUrl: 'https://www.facebook.com/', title: 'Follow on Facebook'},
-        {selector: 'a#twitter-follow', expectedUrl: 'https://twitter.com/', title: 'Follow on Twitter'},
-    ];
-
     const socialMediaSection = '//div[contains(@class,"et_pb_row et_pb_row_4")]';
     const xButtons = await page.locator(`${socialMediaSection}//a[@title="Follow on Twitter"]`).all();
     expect(xButtons.length).toBe(5);
@@ -68,7 +63,6 @@ test.skip('Social media buttons are visible and have correct URLs', async ({page
 });
 
 test('All buttons in section refresh page when clicked', async ({page}) => {
-    await page.goto(appUrl);
     const buttonsPage = new ButtonsPage(page);
 
     const buttonsCount = await buttonsPage.buttons.count();

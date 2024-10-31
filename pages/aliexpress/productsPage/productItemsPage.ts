@@ -5,8 +5,8 @@ export default class ProductItemsPage {
     page: Page;
     productsList: Locator;
     productCards: Locator;
-    productsPrice: Locator;
-    productsTitle: Locator;
+    productPrices: Locator;
+    productTitles: Locator;
 
     allProductsLoaded = false;
 
@@ -14,14 +14,14 @@ export default class ProductItemsPage {
         this.page = page;
         this.productsList = page.locator('//div[@id = \'card-list\']');
         this.productCards = this.productsList.locator('//a[contains(@class, \'search-card-item\')]');
-        this.productsTitle = this.productCards.locator('//h4');
-        this.productsPrice = this.productCards.locator('//div[contains(@class, \'multi--price-sale--\')]');
+        this.productTitles = this.productCards.locator('//h4');
+        this.productPrices = this.productCards.locator('//div[contains(@class, \'multi--price-sale--\')]');
     }
 
     async getProductsPrices(): Promise<number[]> {
         try {
             await this.loadAllProducts();
-            const prices = await this.productsPrice.allInnerTexts();
+            const prices = await this.productPrices.allInnerTexts();
             return prices.map(price => sanitizeProductPrice(price));
         } catch (error) {
             console.error(`Failed to get product prices:`, error);
@@ -32,7 +32,7 @@ export default class ProductItemsPage {
     async getProductTitles(): Promise<string[]> {
         try {
             await this.loadAllProducts();
-            return await this.productsTitle.allInnerTexts();
+            return await this.productTitles.allInnerTexts();
         } catch (error) {
             console.error(`Failed to get product titles:`, error);
             return [];

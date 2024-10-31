@@ -4,29 +4,29 @@ import SaucedemoBase from "../pages/saucedemo/saucedemoBase";
 import '../setupEnv';
 import InventoryPage from "../pages/saucedemo/inventoryPage";
 import CartPage from "../pages/saucedemo/cartPage";
+import {arraysHaveSameElements} from "../utils/arraysUtils";
 
 const appUrl = 'https://www.saucedemo.com/';
 
-test('Items add to cart successfully', async ({page, basePage}) => {
+test.beforeEach(async ({page}) => {
     await page.goto(appUrl);
+});
+
+test('Items add to cart successfully', async ({page, basePage}) => {
+    const cartPage = new CartPage(page);
+    const inventoryPage = new InventoryPage(page);
 
     await basePage.login();
-    const inventoryPage = new InventoryPage(page);
-    await inventoryPage.addFirstThreeItemsToCart();
-    const firstThreeItemNames = await inventoryPage.getFirstThreeItemNames();
 
-    const cartPage = new CartPage(page);
+    const inventoryItemNames = ['Sauce Labs Backpack', 'Sauce Labs Bike Light', 'Sauce Labs Bolt T-Shirt'];
+    await inventoryPage.addItemsToCart(inventoryItemNames);
     await basePage.authUserHeaderPage.clickShoppingCart();
-    const cartItemNames = await cartPage.getCartItemNames();
+    const cartItemNames = await cartPage.getItemNames();
 
-    for (let i = 0; i < firstThreeItemNames.length; i++) {
-        expect(await cartItemNames[i].innerText()).toContain(await firstThreeItemNames[i].innerText());
-    }
+    expect(arraysHaveSameElements(inventoryItemNames, cartItemNames)).toBe(true);
 });
 
 test('Login occurs successfully', async ({page, basePage}) => {
-    await page.goto(appUrl);
-
     await basePage.login();
     await verifyLoginSuccess(page, basePage);
 
@@ -40,7 +40,7 @@ async function verifyLogoutSuccess(page: Page, basePage: SaucedemoBase) {
 }
 
 async function verifyLoginSuccess(page: Page, basePage: SaucedemoBase) {
-    await basePage.authUserHeaderPage.shoppingCartButton.waitFor({ state: 'visible' });
+    await basePage.authUserHeaderPage.shoppingCartButton.waitFor({state: 'visible'});
     expect(page.url()).toMatch(/inventory/);
     expect(await basePage.authUserHeaderPage.shoppingCartButton.isVisible()).toBe(true);
 }
