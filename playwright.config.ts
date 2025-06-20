@@ -15,7 +15,7 @@ export default defineConfig({
   timeout: 100000,
   testDir: './tests',
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  // fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -32,8 +32,8 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
-    video: 'on',
-    screenshot: 'on',
+    video: 'off',
+    screenshot: 'off',
   },
 
   /* Configure projects for major browsers */
