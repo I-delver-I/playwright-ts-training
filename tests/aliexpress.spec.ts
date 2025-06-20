@@ -59,7 +59,7 @@ test('Price filter displays error text when passed negative value', async ({page
     expect(errorText).toBe(expectedErrorText);
 });
 
-test('Price filter applies correctly when passed correct values',
+test('Price filter applies correctly when passed correct values @loadsProducts',
     async ({page, productItemsPage, productsFilterPage, searchBarPage}) => {
         const searchValue = 'pants';
         await searchBarPage.fillInput(searchValue);
@@ -77,7 +77,7 @@ test('Price filter applies correctly when passed correct values',
             price >= minPrice && price <= maxPrice)).toBeTruthy();
 });
 
-test('Products have correct titles', async ({productItemsPage, searchBarPage}) => {
+test('Products have correct titles @loadsProducts', async ({productItemsPage, searchBarPage}) => {
     const searchQuery = 'pants';
     await searchBarPage.fillInput(searchQuery);
     await searchBarPage.clickSearchButton();
